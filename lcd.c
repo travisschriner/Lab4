@@ -10,6 +10,7 @@
  */
 
 
+//this is copied pretty much from Lab 3 example code
 void INITSPI(){
 
 	UCB0CTL1 |= UCSWRST;
