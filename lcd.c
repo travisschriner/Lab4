@@ -11,14 +11,17 @@
 
 #include "msp430.h"
 
-#define LCDDATA
-#define LCDSEND
-#define LCDCON
+#define RS_MASK 0x40
+
+char LCDDATA, LCDSEND, LCDCON;
 
 void LCDinit();
 void LCDclear();
 void LCDDELAY1();
 void LCDDELAY2();
+void writeCommandNibble(char commandNibble);
+void writeCommandByte(char commandByte);
+void writeDataByte(char dataByte);
 void cursorToLineOne();
 void cursorToLineTwo();
 void writeChar(char asciiChar);
@@ -26,9 +29,9 @@ void writeString(char * string);
 void scrollString(char * string1, char * string2);
 void setSSHi();
 void setSSLo();
-void SPISEND();
-void LCDWRT4();
-void LCDWRT8();
+void SPIsend(char byteToSend);
+void LCDWRT4(char byte);
+void LCDWRT8(char byteToSend);
 
 //this is copied pretty much from Lab 3 example code
 void INITSPI(){
@@ -49,86 +52,73 @@ void INITSPI(){
 
 void LCDinit(){
 
-	setSSHi();
+	writeCommandNibble(0x03);
 
-	LCDCON = 0;
+	writeCommandNibble(0x03);
 
-	LCDDATA = 3;
-	LCDWRT4();
-	LCDDELAY2();
+    writeCommandNibble(0x03);
 
-	LCDDATA = 3;
-	LCDWRT4();
-	LCDDELAY1();
+    writeCommandNibble(0x02);
 
-	LCDDATA = 3;
-	LCDWRT4();
-	LCDDELAY1();
+    writeCommandByte(0x28);
 
-	LCDDATA = 2;
-	LCDWRT4();
-	LCDDELAY1();
+    writeCommandByte(0x0C);
 
-	LCDSEND = 40;
-	LCDWRT8();
-	LCDDELAY2();
+    writeCommandByte(0x01);
 
-	LCDSEND = 12;
-	LCDWRT8();
-	LCDDELAY2();
+    writeCommandByte(0x06);
 
-	LCDSEND = 1;
-	LCDWRT8();
-	LCDDELAY1();
+    writeCommandByte(0x01);
 
-	LCDSEND = 6;
-	LCDWRT8();
-	LCDDELAY2();
+    writeCommandByte(0x02);
 
-	LCDSEND = 1;
-	LCDWRT8();
-	LCDDELAY2();
-
-	LCDSEND = 2;
-	LCDWRT8();
-	LCDDELAY2();
-
-	r5 = 0;
-	SPISEND();
-	LCDDELAY1();
-
+    SPIsend(0);
+    LCDDELAY1();
 
 }
 
+void writeCommandNibble(char commandNibble){
+
+    LCDCON &= ~RS_MASK;
+    LCDWRT4(commandNibble);
+    LCDDELAY2();
+}
+
+void writeCommandByte(char commandByte)
+{
+    LCDCON &= ~RS_MASK;
+    LCDWRT8(commandByte);
+    LCDDELAY2();
+}
+
+void writeDataByte(char dataByte){
+
+    LCDCON |= RS_MASK;
+    LCDWRT8(dataByte);
+    LCDDELAY2();
+}
+
+
 void LCDclear(){
 
-	LCDCON = 0;
-	LCDSEND = 1;
-	LCDWRT8();
-	LCDDELAY1();
-	LCDCON = 64;
-	LCDDELAY2();
-
+	writeCommandByte(1);
 }
 
 //40.5 us delay
 void LCDDELAY1(){
 
+	_delay_cycles(45);
 }
 
 //1.65 ms delay
 void LCDDELAY2(){
 
+	_delay_cycles(1817);
 }
 
 void cursorToLineTwo(){
 
-	LCDCON = 0;
-	LCDSEND = 192;
-	LCDWRT8();
-	LCDDELAY1();
-	LCDCON = 64;
-	LCDDELAY2();
+	writeCommandByte(0xC0);
 }
 
 void cursorToLineOne(){
@@ -155,44 +145,56 @@ void setSSLo(){
 	P1OUT &= ~BIT0;
 }
 
-void SPISEND(){
+void SPIsend(char byteToSend){
+
+volatile char readByte;
+
 	setSSLo();
-	UCB0TXBUF = r5;
-	//need to complete all of wait1.
-	//I dont know how to pipe bit.b command
 
-}
-void LCDWRT4(){
-	LCDDATA = r5;
-	r5 += 15;
-	LCDCON |= r5;
-	r5 += 127;
-	SPISEND();
-	LCDDELAY1();
-	r5 |= 128;
-	SPISEND();
-	LCDDELAY1();
-	r5 += 127;
-	SPISEND();
-	LCDDELAY1();
+    UCB0TXBUF = byteToSend;
+
+    while(!(UCB0RXIFG & IFG2)){
+	        // wait until you've received a byte
+	    }
+
+    readByte = UCB0RXBUF;
+
+    setSSHi();
 
 
 }
+void LCDWRT4(char byte){
 
-void LCDWRT8(){
+	byte &= 0x0f;
+	byte |= LCDCON;
+	byte &= 0x7f;
+	SPIsend(byte);
+	LCDDELAY1();
+	byte |= 0x80;
+	SPIsend(byte);
+	LCDDELAY1();
+	byte &= 0x7f;
+	SPIsend(byte);
+	LCDDELAY1();
+}
 
-	r5 = LCDDATA;
-	r5 += 15;
-	r5 |= LCDCON;
-	r5 += 127;
-	SPISEND();
-	LCDDELAY1();
-	r5 |= 128;
-	SPISEND();
-	LCDDELAY1();
-	r5 += 127;
-	SPISEND();
-	LCDDELAY1();
+void LCDWRT8(char byteToSend){
+
+	unsigned char sendByte = byteToSend;
+
+	sendByte &= 0xF0;
+
+	// rotate to the right 4 times
+    sendByte = sendByte >> 4;
+
+    LCDWRT4(sendByte);
+
+    sendByte = byteToSend;
+
+    sendByte &= 0x0F;
+
+    LCDWRT4(sendByte);
+
 }
 
 
