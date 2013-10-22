@@ -9,24 +9,18 @@
  *  that I would need.
  */
 
-#include "msp430.h"
+#include <msp430.h>
+#include "lcd.h"
 
 #define RS_MASK 0x40
 
 char LCDDATA, LCDSEND, LCDCON;
 
-void LCDinit();
-void LCDclear();
 void LCDDELAY1();
 void LCDDELAY2();
 void writeCommandNibble(char commandNibble);
 void writeCommandByte(char commandByte);
 void writeDataByte(char dataByte);
-void cursorToLineOne();
-void cursorToLineTwo();
-void writeChar(char asciiChar);
-void writeString(char * string);
-void scrollString(char * string1, char * string2);
 void setSSHi();
 void setSSLo();
 void SPIsend(char byteToSend);
@@ -34,7 +28,7 @@ void LCDWRT4(char byte);
 void LCDWRT8(char byteToSend);
 
 //this is copied pretty much from Lab 3 example code
-void INITSPI(){
+void initSPI(){
 
 	UCB0CTL1 |= UCSWRST;
 	UCB0CTL0 |= UCCKPH|UCMSB|UCMST|UCSYNC;

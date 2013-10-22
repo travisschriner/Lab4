@@ -1,3 +1,4 @@
+#include <msp430.h>
 #include "lcd.h"
 
 /*Author: Travis Schriner
