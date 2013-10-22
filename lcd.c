@@ -35,6 +35,10 @@ void LCDclear(){
 
 }
 
+void LCDDELAY1(){
+
+}
+
 void cursorToLineTwo(){
 
 }
@@ -61,6 +65,35 @@ void setSSHi(){
 
 void setSSLo(){
 	P1OUT &= ~BIT0;
+}
+
+void LCDWRT4(){
+	LCDDATA = r5;
+	r5 += 15;
+	LCDCON |= r5;
+	r5 += 127;
+	SPISEND();
+	LCDDELAY1();
+	r5 |= 128;
+	SPISEND();
+	LCDDELAY1();
+	r5 += 127;
+	SPISEND();
+	LCDDELAY1();
+
+
+}
+
+void LCDWRT8(){
+
+}
+
+void SPISEND(){
+	setSSLo();
+	UCB0TXBUF = r5;
+	//need to complete all of wait1.
+	//I dont know how to pipe bit.b command
+
 }
 
 
