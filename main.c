@@ -1,4 +1,4 @@
-#include <msp430.h> 
+#include "lcd.h"
 
 /*Author: Travis Schriner
  * Date 21 Oct 2013
@@ -9,5 +9,11 @@
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 	
-	return 0;
+    initSPI();
+    LCDinit();
+    LCDclear();
+
+	while(1){
+
+	}
 }

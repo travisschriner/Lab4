@@ -122,6 +122,7 @@ void cursorToLineTwo(){
 }
 
 void cursorToLineOne(){
+	writeCommandByte(1);
 
 }
 
