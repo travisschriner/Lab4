@@ -55,4 +55,12 @@ void scrollString(char * string1, char * string2){
 
 }
 
+void setSSHi(){
+	P1OUT |= BIT0;
+}
+
+void setSSLo(){
+	P1OUT &= ~BIT0;
+}
+
 
