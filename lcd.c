@@ -33,15 +33,15 @@ void initSPI(){
 	UCB0CTL1 |= UCSWRST;
 	UCB0CTL0 |= UCCKPH|UCMSB|UCMST|UCSYNC;
 	UCB0CTL1 |=	UCSSEL1;
-	UCB0STAT |=	UCLISTEN;
+
 	P1DIR	 |=	BIT0;
 	P1SEL	 |=	BIT5;
 	P1SEL2	 |=	BIT5;
 	P1SEL	 |=	BIT7;
 	P1SEL2	 |= BIT7;
 	P1SEL	 |=	BIT6;
-	P1SEL	 |=	BIT6;
-	UCB0CTL1 |=	UCSWRST;
+	P1SEL2	 |=	BIT6;
+	UCB0CTL1 &=	~UCSWRST;
 }
 
 void LCDinit(){
@@ -121,16 +121,103 @@ void cursorToLineOne(){
 }
 
 void writeChar(char asciiChar){
+	LCDCON |= RS_MASK;
+	LCDWRT8(asciiChar);
+	LCDDELAY2();
 
 }
 
 void writeString(char * string){
+	int i = 0;
+	LCDCON |= RS_MASK;
+	for (i =0; i < 8; i++){
+		LCDWRT8(string[i]);
+		LCDDELAY2();
+	}
+
+
 
 }
 
-void scrollString(char * string1, char * string2){
+void scrollString(char *string1, char *string2) {
+        unsigned int i = 0;
 
+        char *count1 = string1, *count2 = string2;
+
+        while (1) {
+                cursorToLineOne();
+                char *currentChar = count1;
+
+                for (i = 0; i < 8; i++) {
+                     writeDataByte(*currentChar);        //send data in the string to be written
+
+                     currentChar++;
+
+                     if (*currentChar == 0)
+                           currentChar = string1;
+                }
+                count1++;
+
+                if (*count1 == 0) {
+                     count1 = string1;
+                }
+
+                cursorToLineTwo();
+                char *currentChar2 = count2;
+                for (i = 0; i < 8; i++) {
+                      writeDataByte(*currentChar2);        //send data in the string to be written
+
+                      currentChar2++;
+
+                      if (*currentChar2 == 0)
+                      currentChar2 = string2;
+                }
+                count2++;
+
+                if (*count2 == 0) {
+                    count2 = string2;
+                }
+
+                __delay_cycles(665544);
+
+                LCDclear();
+        }
 }
+
+//void scrollString(char * string1, char * string2){
+//
+//	int i;
+//
+//	char *line1 = string1, *line2 = string2;
+//	while(1){
+//		cursorToLineOne();
+//		char *myChar = line1;
+//		for(i=0; i < 8; i++){
+//			writeDataByte(*myChar);
+//			myChar++;
+//
+//			if (*myChar == 0){
+//				myChar = string1;
+//			}
+//			line1++;
+//		}
+//
+//
+//		cursorToLineTwo();
+//		char *mySecondChar = line2;
+//		for(i=0; i <8; i++){
+//			writeDataByte(*mySecondChar);
+//			mySecondChar++;
+//
+//			if(*mySecondChar == 0){
+//				mySecondChar = string2;
+//			}
+//		}
+//
+//		_delay_cycles(1500);
+//		LCDclear();
+//	}
+//}
 
 void setSSHi(){
 	P1OUT |= BIT0;

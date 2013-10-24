@@ -14,6 +14,8 @@ int main(void) {
     LCDinit();
     LCDclear();
 
+    scrollString("ECE382 is my Favorite Class!", "jiggless");
+
 	while(1){
 
 	}
