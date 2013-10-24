@@ -16,38 +16,46 @@ int main(void) {
     LCDclear();
 
     char *topMessage = "ECE382 is my Favorite Class!";
+    char *prompt = "Message?";
+    char *promptKey = "Press123";
     char *message1 = "This is message 1 fool!";
     char *message2 = "This is message 2 fool!";
     char *message3 = "This is message 3 fool!";
+
+
+
+    cursorToLineOne();
+    writeString(prompt);
+    cursorToLineTwo();
+    writeString(promptKey);
+
 
     configureP1PinAsButton(BIT1|BIT2|BIT3);         // configure pins 1, 2, and 3 as buttons
 
        P1DIR |= BIT0|BIT6;                             // set launchpad LEDs to output
 
-       while (1) {
            char buttons[] = {BIT1, BIT2, BIT3};
            char pressedButton = pollP1Buttons(buttons, 3);
 
            switch (pressedButton) {
                case BIT1:
-            	   P1OUT ^= BIT0|BIT6;
+
             	   waitForP1ButtonRelease(BIT1);
             	   scrollString(topMessage, message1);
 
                    break;
                case BIT2:
-            	   P1OUT ^= BIT0|BIT6;
+
             	   waitForP1ButtonRelease(BIT2);
             	   scrollString(topMessage, message2);
                    break;
                case BIT3:
-            	   P1OUT ^= BIT0|BIT6;
+
             	   waitForP1ButtonRelease(BIT3);
             	   scrollString(topMessage, message3);
 
                    break;
            }
-       }
  while(1){
 
  }
