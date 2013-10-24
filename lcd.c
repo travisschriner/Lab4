@@ -139,6 +139,7 @@ void writeString(char * string){
 
 }
 
+//courtesy of C2C Steinmiller...
 void scrollString(char *string1, char *string2) {
         unsigned int i = 0;
 
@@ -178,46 +179,13 @@ void scrollString(char *string1, char *string2) {
                     count2 = string2;
                 }
 
-                __delay_cycles(665544);
+                __delay_cycles(600000);
 
                 LCDclear();
         }
 }
 
-//void scrollString(char * string1, char * string2){
-//
-//	int i;
-//
-//	char *line1 = string1, *line2 = string2;
-//	while(1){
-//		cursorToLineOne();
-//		char *myChar = line1;
-//		for(i=0; i < 8; i++){
-//			writeDataByte(*myChar);
-//			myChar++;
-//
-//			if (*myChar == 0){
-//				myChar = string1;
-//			}
-//			line1++;
-//		}
-//
-//
-//		cursorToLineTwo();
-//		char *mySecondChar = line2;
-//		for(i=0; i <8; i++){
-//			writeDataByte(*mySecondChar);
-//			mySecondChar++;
-//
-//			if(*mySecondChar == 0){
-//				mySecondChar = string2;
-//			}
-//		}
-//
-//		_delay_cycles(1500);
-//		LCDclear();
-//	}
-//}
+
 
 void setSSHi(){
 	P1OUT |= BIT0;
